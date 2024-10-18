@@ -6,30 +6,31 @@
             <div class="card">
                 <h5 class="card-header">{{ __('Form USER') }}</h5>
                 <div class="card-body">
-                    <form action="{{ route($route) }}" method="POST">
+                    <form action="{{ route($route, $id) }}" method="POST">
                         @csrf
-                        @method($method) <!-- This will handle PUT, PATCH, or DELETE requests -->
-                        
+                        @if ($method)
+                            @method($method)
+                        @endif
                         <div class="form-group">
                             <label for="name">Nama</label>
-                            <input type="text" name="name" id="name" class="form-control" value="{{ old('name', $model->name ?? '') }}" autofocus>
+                            <input type="text" name="name" id="name" class="form-control" value="{{ old('name', $user->name ?? '') }}" autofocus>
                             <span class="text-danger">{{ $errors->first('name') }}</span>
                         </div>
                         <div class="form-group mt-3">
                             <label for="email">Email</label>
-                            <input type="email" name="email" id="email" class="form-control" value="{{ old('email', $model->email ?? '') }}">
+                            <input type="email" name="email" id="email" class="form-control" value="{{ old('email', $user->email ?? '') }}">
                             <span class="text-danger">{{ $errors->first('email') }}</span>
                         </div>
                         <div class="form-group mt-3">
                             <label for="nohp">No HP</label>
-                            <input type="text" name="nohp" id="nohp" class="form-control" value="{{ old('nohp', $model->nohp ?? '') }}">
+                            <input type="text" name="nohp" id="nohp" class="form-control" value="{{ old('nohp', $user->nohp ?? '') }}">
                             <span class="text-danger">{{ $errors->first('nohp') }}</span>
                         </div>
                         <div class="form-group mt-3">
                             <label for="akses">Hak Akses</label>
                             <select name="akses" id="akses" class="form-control">
-                                <option value="operator" {{ old('akses', $model->akses ?? '') == 'operator' ? 'selected' : '' }}>Operator Kampus</option>
-                                <option value="admin" {{ old('akses', $model->akses ?? '') == 'admin' ? 'selected' : '' }}>Admin Keuangan</option>
+                                <option value="operator" {{ old('akses', $user->akses ?? '') == 'operator' ? 'selected' : '' }}>Operator Kampus</option>
+                                <option value="admin" {{ old('akses', $user->akses ?? '') == 'admin' ? 'selected' : '' }}>Admin Keuangan</option>
                             </select>
                             <span class="text-danger">{{ $errors->first('akses') }}</span>
                         </div>                        

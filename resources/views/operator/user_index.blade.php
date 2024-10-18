@@ -20,7 +20,7 @@
                                 </tr>
                             </thead>
                             <tbody>
-                                @forelse ($models as $item)
+                                @forelse ($users as $item)
                                     <tr>
                                         <td>{{ $loop->iteration }}</td>
                                         <td>{{ $item->name }}</td>
@@ -31,6 +31,14 @@
                                             <a href="{{ route('user.edit', $item->id) }}">
                                                 Edit
                                             </a>
+                                            |
+                                            <a href="{{ route('user.destroy', $item->id) }}" href="#" onclick="event.preventDefault(); document.getElementById('user-{{ $item->id }}').submit();">
+                                                <form id="user-{{ $item->id }}" action="{{ route('user.destroy', $item->id) }}" style="hidden" method="POST" class="d-none">
+                                                    @csrf
+                                                    @method('DELETE')
+                                                </form>
+                                                Hapus
+                                            </a>
                                         </td>
                                     </tr>
                                 @empty
@@ -40,7 +48,7 @@
                                 @endforelse
                             </tbody>
                         </table>
-                        {!! $models->links() !!}
+                        {!! $users->links() !!}
                     </div>
                 </div>
             </div>

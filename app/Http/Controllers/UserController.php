@@ -3,7 +3,7 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
-use \App\Models\User as Model;
+use \App\Models\User;
 
 class UserController extends Controller
 {
@@ -12,25 +12,33 @@ class UserController extends Controller
      */
     public function index()
     {
-        return view('operator.user_index', [
-            'models' => Model::where('akses', '<>', 'user')
-            ->latest()
-            ->paginate(50)
-        ]);
+        $users = User::latest()->paginate();
+
+        return view('operator.user_index', compact('users'));
+        // return view('operator.user_index', [
+        //     'models' => Model::where('akses', '<>', 'user')
+        //     ->latest()
+        //     ->paginate(50)
+        // ]);
     }
 
     /**
      * Show the form for creating a new resource.
      */
-    public function create()
+    public function create(Request $request)
     {
-        $data = [
-            'model' => new \App\Models\User(),
-            'method' => 'POST',
-            'route' => 'user.store',
-            'button' => 'SIMPAN'
-        ];
-        return view('operator.user_form', $data);
+        $user = new User();
+        $route = 'user.store';
+        $id = null;
+        $method = null;
+
+        // $data = [
+        //     'model' => new \App\Models\User(),
+        //     'method' => 'POST',
+        //     'route' => 'user.store',
+        //     'button' => 'SIMPAN'
+        // ];
+        return view('operator.user_form', compact('user','route', 'id', 'method'));
     }
 
     /**
@@ -40,70 +48,83 @@ class UserController extends Controller
     {
         $requestData = $request->validate([
             'name' => 'required',
-            'email' => 'required|unique:users,email',
-            'nohp' => 'required|unique:users,nohp',
+            'email' => 'required|unique:users',
+            'nohp' => 'required|unique:users',
             'akses' => 'required|in:operator,admin',
             'password' => 'required'
         ]);
+
         $requestData['password'] = bcrypt($requestData['password']);
-        // $requestData['email_verified_at'] = now(); //jika ingin verifikasi email
-        Model::create($requestData);
-        flash('Data Berhasil Disimpan');
-        return back();
+
+        User::create($requestData);
+
+        flash('Data User Berhasil Disimpan');
+
+        return redirect()->route('user.index');
     }
 
     /**
      * Display the specified resource.
      */
-    public function show(string $id)
-    {
-        //
-    }
+    // public function show(User $user)
+    // {
+    //     return view()
+    // }
 
     /**
      * Show the form for editing the specified resource.
      */
-    public function edit(string $id)
+    public function edit(User $user)
     {
-        $data = [
-        'model' => \App\Models\User::findOrFail($id),
-        'method' => 'PUT',
-        'route' => ['user.update', $id],
-        'button' => 'Update'
-    ];
+        $route = 'user.update';
+        $id = $user->id;
+        $method = 'PUT';
 
-    return view('operator.user_form', $data);
+        return view('operator.user_form', compact('user', 'id', 'route','method'));
+        // $data = [
+        //     'model' => \App\Models\User::findOrFail($id),
+        //     'method' => 'PUT',
+        //     'route' => 'user.update', $id,
+        //     'button' => 'Update'
+        // ];
+        // return view('operator.user_form', $data);
     }
 
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, string $id)
+    public function update(Request $request, User $user)
     {
         $requestData = $request->validate([
             'name' => 'required',
-            'email' => 'required|unique:users,email,' .$id,
-            'nohp' => 'required|unique:users,nohp,' .$id,
+            'email' => 'required|unique:users,email,' . $user->id,
+            'nohp' => 'required|unique:users,nohp,' . $user->id,
             'akses' => 'required|in:operator,admin',
             'password' => 'nullable'
         ]);
-        $model = Model::findOrFail($id);
+
         if ($requestData['password'] == ""){
             unset($requestData['password']);
         } else{
             $requestData['password'] = bcrypt($requestData['password']);
         }
-        $model->fill($requestData);
-        $model->save();
-        flash('Data Berhasil Disimpan');
+
+        $user->update($requestData);
+        
+        flash('Data User Berhasil Diubah');
+        
         return redirect()->route('user.index');
     }
 
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy(string $id)
+    public function destroy(User $user)
     {
-        //
+        $user->delete();
+
+        flash('Data User Berhasil Dihapus');
+
+        return redirect()->route('user.index');
     }
 }
