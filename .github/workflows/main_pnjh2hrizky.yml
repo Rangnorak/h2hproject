@@ -1,7 +1,4 @@
-# Docs for the Azure Web Apps Deploy action: https://github.com/Azure/webapps-deploy
-# More GitHub Actions for Azure: https://github.com/Azure/actions
-
-name: Build and deploy ASP app to Azure Web App - pnjh2hrizky
+name: Build and deploy ASP.NET app to Azure Web App - pnjh2hrizky
 
 on:
   push:
@@ -14,25 +11,31 @@ jobs:
     runs-on: windows-latest
 
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout code
+        uses: actions/checkout@v4
 
+      # Setup MSBuild Path
       - name: Setup MSBuild path
         uses: microsoft/setup-msbuild@v1.0.2
 
+      # Setup NuGet
       - name: Setup NuGet
         uses: NuGet/setup-nuget@v1.0.5
 
+      # Restore NuGet packages
       - name: Restore NuGet packages
-        run: nuget restore
+        run: nuget restore pnjh2hrizky.sln  # Pastikan untuk menyesuaikan nama file solusi (.sln) Anda
 
-      - name: Publish to folder
-        run: msbuild /nologo /verbosity:m /t:Build /t:pipelinePreDeployCopyAllFilesToOneFolder /p:_PackageTempDir="\published\"
+      # Build the project
+      - name: Build the project
+        run: msbuild pnjh2hrizky.sln /p:Configuration=Release /p:OutputPath=".\publish"  # Gantilah dengan file solusi (.sln) Anda
 
+      # Upload the artifact for deployment
       - name: Upload artifact for deployment job
         uses: actions/upload-artifact@v4
         with:
           name: ASP-app
-          path: '/published/**'
+          path: ./publish/**  # Pastikan path ini sesuai dengan hasil publish Anda
 
   deploy:
     runs-on: windows-latest
@@ -41,14 +44,15 @@ jobs:
       name: 'Production'
       url: ${{ steps.deploy-to-webapp.outputs.webapp-url }}
     permissions:
-      id-token: write #This is required for requesting the JWT
+      id-token: write  # This is required for requesting the JWT
 
     steps:
       - name: Download artifact from build job
         uses: actions/download-artifact@v4
         with:
           name: ASP-app
-      
+
+      # Login to Azure using service principal
       - name: Login to Azure
         uses: azure/login@v2
         with:
@@ -56,11 +60,11 @@ jobs:
           tenant-id: ${{ secrets.AZUREAPPSERVICE_TENANTID_FA38DB0B8CCB4D7290E07C2F2377F900 }}
           subscription-id: ${{ secrets.AZUREAPPSERVICE_SUBSCRIPTIONID_B2685A9183524A49AC79FC5FB516C5C8 }}
 
+      # Deploy to Azure Web App
       - name: Deploy to Azure Web App
         id: deploy-to-webapp
         uses: azure/webapps-deploy@v3
         with:
-          app-name: 'pnjh2hrizky'
-          slot-name: 'Production'
-          package: .
-          
+          app-name: 'pnjh2hrizky'  # Ganti dengan nama aplikasi web Azure Anda
+          slot-name: 'Production'  # Sesuaikan dengan slot deployment jika diperlukan
+          package: ./publish  # Path ke folder publish hasil build
