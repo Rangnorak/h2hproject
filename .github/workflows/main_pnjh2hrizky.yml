@@ -16,36 +16,22 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Setup MSBuild path
-        uses: microsoft/setup-msbuild@v1.0.2
+      - name: Set up Node.js version
+        uses: actions/setup-node@v3
+        with:
+          node-version: '18.x'
 
-      - name: Setup NuGet
-        uses: NuGet/setup-nuget@v1.0.5
-
-      - name: Restore NuGet packages
-        run: nuget restore
-
-      - name: Publish to folder
-        run: msbuild /nologo /verbosity:m /t:Build /t:pipelinePreDeployCopyAllFilesToOneFolder /p:_PackageTempDir="\published\"
-
+      - name: npm install, build, and test
+        run: |
+          npm install
+          npm run build --if-present
+          npm run test --if-present
+      
       - name: Upload artifact for deployment job
         uses: actions/upload-artifact@v4
         with:
-          name: ASP-app
-          path: '/published/**'
-
-      - name: Setup Node.js environment
-        uses: actions/setup-node@v4.1.0
-        with:
-          node-version: '18.x'  # Versi Node.js LTS terbaru
-          cache: 'npm'          # Menggunakan cache untuk npm dependencies
-
-      # Langkah-langkah lainnya, misalnya install dependensi dan build
-      - name: Install dependencies
-        run: npm ci  # npm ci lebih cepat dan konsisten daripada npm install di lingkungan CI/CD
-
-      - name: Run build
-        run: npm run build
+          name: node-app
+          path: .
           
 
   deploy:
